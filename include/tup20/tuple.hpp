@@ -60,15 +60,15 @@ struct tuple_friends {
 
  public:
   template<auto N>
-  friend constexpr auto get(auto&& tup)
+  friend constexpr auto get(auto&& tup) TUP20_ARROW(
 #if TUP20_USE_TYPE_PACK_ELEMENT
-      TUP20_ARROW(
-          get_n_<N,
-                 typename std::remove_cvref_t<
-                     decltype(tup)>::template nth_t<N>>(TUP20_FWD(tup)))
+      get_n_<N,
+             typename std::remove_cvref_t<decltype(tup)>::template nth_t<N>>(
+          TUP20_FWD(tup))
 #else
-      TUP20_ARROW(get_n_<N>(TUP20_FWD(tup)))
+      get_n_<N>(TUP20_FWD(tup))
 #endif
+  )
   template<class T>
   friend constexpr auto get(auto&& tup)
       TUP20_ARROW(get_t_<T>(TUP20_FWD(tup)))
