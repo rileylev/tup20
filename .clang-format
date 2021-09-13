@@ -48,8 +48,7 @@ AlwaysBreakTemplateDeclarations: true
 SpaceBeforeParens: Never
 
 
-StatementMacros: ['ARROW', 'BODX', 'NOEX', 'NOEX_RET', 'RET', 'ASSERT_ARROW', 'ASSERT_NX_RET']
-ForEachMacros: ['UNLESS', 'UNTIL']
+StatementMacros: ['TUP20_ARROW']
 
 PenaltyExcessCharacter: 30
 PenaltyReturnTypeOnItsOwnLine: 3

@@ -35,7 +35,8 @@ inline constexpr niebloid_impl::get_t<T> get_t{};
 template<auto N>
 inline constexpr niebloid_impl::get_n<N> get_n{};
 
-// It isn't doing empty base just from no_unique_address?
+namespace impl {
+// It doesn't compress a tuple with two of the same empty types
 template<std::size_t index, class Type>
 struct box {
   [[no_unique_address]] Type elt;
@@ -43,18 +44,19 @@ struct box {
 
 struct tuple_friends {
  private:
-#define DEFINE_GET_HELPERS(crf, move_)                                    \
+#define TUP20_DEFINE_GET_HELPERS(crf, move_)                              \
   template<auto N, class T>                                               \
   static constexpr auto get_n_(box<N, T> crf tup)                         \
-      TUP20_ARROW(move_(tup.elt)) template<class T, auto N>               \
-      static constexpr auto get_t_(box<N, T> crf tup)                     \
-          TUP20_ARROW(move_(tup.elt))
+      TUP20_ARROW(move_(tup.elt))                                         \
+  template<class T, auto N>                                               \
+  static constexpr auto get_t_(box<N, T> crf tup)                         \
+      TUP20_ARROW(move_(tup.elt))
 
-  DEFINE_GET_HELPERS(&, )
-  DEFINE_GET_HELPERS(const&, )
-  DEFINE_GET_HELPERS(&&, std::move)
-  DEFINE_GET_HELPERS(const&&, std::move)
-#undef DEFINE_GET_HELPERS
+  TUP20_DEFINE_GET_HELPERS(&, )
+  TUP20_DEFINE_GET_HELPERS(const&, )
+  TUP20_DEFINE_GET_HELPERS(&&, std::move)
+  TUP20_DEFINE_GET_HELPERS(const&&, std::move)
+#undef TUP20_DEFINE_GET_HELPERS
 
  public:
   template<auto N>
@@ -67,9 +69,9 @@ struct tuple_friends {
 #else
       TUP20_ARROW(get_n_<N>(TUP20_FWD(tup)))
 #endif
-          template<class T>
-          friend constexpr auto get(auto&& tup)
-              TUP20_ARROW(get_t_<T>(TUP20_FWD(tup)))
+  template<class T>
+  friend constexpr auto get(auto&& tup)
+      TUP20_ARROW(get_t_<T>(TUP20_FWD(tup)))
 };
 
 template<class seq, class... Ts>
@@ -105,10 +107,14 @@ struct tuple_impl<std::index_sequence<Is...>, Ts...>
   using nth_t = __type_pack_element<N, Ts...>;
 #endif
 };
+} // namespace impl
 
+/**
+ * A tuple that is trivially copyable if its components are
+ */
 template<class... Ts>
-struct tuple : tuple_impl<std::index_sequence_for<Ts...>, Ts...> {
-  using base = tuple_impl<std::index_sequence_for<Ts...>, Ts...>;
+struct tuple : impl::tuple_impl<std::index_sequence_for<Ts...>, Ts...> {
+  using base = impl::tuple_impl<std::index_sequence_for<Ts...>, Ts...>;
   using base::base;
 };
 
@@ -116,6 +122,8 @@ template<class... Ts>
 tuple(Ts...) -> tuple<Ts...>;
 
 } // namespace tup20
+
+// specialization for std::tuple_size, element
 template<class... Ts>
 struct std::tuple_size<tup20::tuple<Ts...>>
     : std::integral_constant<std::size_t, sizeof...(Ts)> {};
@@ -125,7 +133,7 @@ struct std::tuple_element<N, tup20::tuple<Ts...>> {
 };
 
 namespace tup20 {
-
+namespace impl {
 template<auto size, class X, class Y>
 concept same_tuple_size =
     size == std::tuple_size<std::remove_cvref_t<X>>{}
@@ -138,7 +146,7 @@ requires(same_tuple_size<sizeof...(Is), X, Y>) //
                                  std::index_sequence<Is...>)
         TUP20_ARROW(((get_n<Is>(x) == get_n<Is>(y)) and ...))
 
-            template<class X, class Y, auto... Is>
+template<class X, class Y, auto... Is>
 requires(same_tuple_size<sizeof...(Is), X, Y>) //
     constexpr static auto spaceship_(X const& x,
                                      Y const& y,
@@ -153,36 +161,16 @@ requires(same_tuple_size<sizeof...(Is), X, Y>) //
                      and ...));
   return ord;
 }
+} // namespace impl
 
 template<class X, class Y>
-constexpr auto operator==(X const& x, Y const& y) TUP20_ARROW(equal_(
-    x,
-    y,
-    std::make_index_sequence<
-        std::tuple_size<X>::value>{})) template<class X, class Y>
-constexpr auto operator<=>(X const& x, Y const& y) TUP20_ARROW(
-    spaceship_(x, y, std::make_index_sequence<std::tuple_size<X>::value>{}))
-
-    static_assert(std::is_trivially_destructible_v<tuple<int, int>>);
-static_assert(std::is_trivially_copyable_v<tuple<int, int>>);
-
-static_assert(get<1>(tuple{0, 2, 4}) == 2);
-
-static_assert(tuple{0, 1, 2} == tuple{0, 1, 2});
-static_assert(std::is_eq(tuple{0, 1, 2} <=> tuple{0, 1, 2}));
-static_assert(tuple{0ul, 1, 2} == tuple{0u, 1, 2});
-
-struct empty {};
-struct empty2 {};
-static_assert(std::is_empty_v<empty>);
-
-static_assert(sizeof(tuple<empty, int, empty2>) == sizeof(int));
-static_assert(sizeof(tuple<empty, empty2>) == sizeof(empty));
-
-static_assert([] {
-  tuple<int> t;
-  get<0>(t) = 1;
-  return t;
-}() == tuple{1});
+constexpr auto operator==(X const& x, Y const& y) TUP20_ARROW(
+    impl::equal_(x, y, std::make_index_sequence<std::tuple_size<X>::value>{}))
+template<class X, class Y>
+constexpr auto operator<=>(X const& x, Y const& y)
+    TUP20_ARROW(impl::spaceship_(
+        x,
+        y,
+        std::make_index_sequence<std::tuple_size<X>::value>{}))
 } // namespace tup20
 #endif // TUPLE_INCLUDE_GUARD_HPP
