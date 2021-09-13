@@ -1,0 +1,57 @@
+# -*- mode: yaml; -*-
+Language: Cpp
+PointerAlignment: Left
+
+AlignOperands: AlignAfterOperator
+AlignAfterOpenBracket: true
+AlignEscapedNewlines: Right
+AlignConsecutiveAssignments: Consecutive
+AlignConsecutiveDeclarations: Consecutive
+AlignConsecutiveMacros: Consecutive
+
+AllowAllArgumentsOnNextLine: false
+AllowAllParametersOfDeclarationOnNextLine: false
+
+AllowShortCaseLabelsOnASingleLine: true
+AllowShortFunctionsOnASingleLine: true
+AllowShortLambdasOnASingleLine: true
+AllowShortIfStatementsOnASingleLine: AllIfsAndElse
+AllowShortLoopsOnASingleLine: true
+AllowShortBlocksOnASingleLine: Always
+
+AccessModifierOffset: -1
+BinPackArguments: false
+BinPackParameters: false
+BreakBeforeBinaryOperators: NonAssignment
+BreakBeforeBraces: Attach
+BreakBeforeTernaryOperators: true
+BreakConstructorInitializers: BeforeColon
+BreakInheritanceList: BeforeColon
+BreakStringLiterals: true
+ColumnLimit: 75
+CommentPragmas: "-\\*-.*-\\*-"
+CompactNamespaces: true
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
+Cpp11BracedListStyle: true
+FixNamespaceComments: true
+IndentCaseLabels: true
+IndentGotoLabels: true
+IndentPPDirectives: AfterHash
+IndentWidth: 2
+IndentWrappedFunctionNames: true
+SortIncludes: false
+ReflowComments: true
+Standard: Latest
+UseTab: Never
+SpaceAfterTemplateKeyword: false
+AlwaysBreakTemplateDeclarations: true
+SpaceBeforeParens: Never
+
+
+StatementMacros: ['ARROW', 'BODX', 'NOEX', 'NOEX_RET', 'RET', 'ASSERT_ARROW', 'ASSERT_NX_RET']
+ForEachMacros: ['UNLESS', 'UNTIL']
+
+PenaltyExcessCharacter: 30
+PenaltyReturnTypeOnItsOwnLine: 3
+PenaltyIndentedWhitespace: 3
+PenaltyBreakBeforeFirstCallParameter: 140
