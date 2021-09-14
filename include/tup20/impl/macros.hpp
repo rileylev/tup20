@@ -47,6 +47,6 @@ auto depend_id(auto x) TUP20_RET(x)
 // TODO: how to make this noexcept-correct? These will probably be inlined
 // so it's low priority
 
-#define TUP20_FN(...) TUP20_FN_(GENSYM(fn_type), __VA_ARGS__)
+#define TUP20_FN(...) TUP20_FN_(TUP20_GENSYM(fn_type), __VA_ARGS__)
 
 #endif // MACROS_HPP_INCLUDE_GUARD

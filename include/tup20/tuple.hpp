@@ -95,7 +95,7 @@ struct tuple_impl<std::index_sequence<Is...>, Ts...>
       constexpr tuple_impl(Tup&& other) noexcept(
           (std::is_nothrow_constructible_v<
                Ts,
-               decltype(get_n<Is>(TUP20_FWD(other)))> && ...)) //
+               decltype(get_n<Is>(TUP20_FWD(other)))> and ...)) //
       requires((sizeof...(Ts) == std::tuple_size<std::remove_cvref_t<Tup>>{})
                and (std::is_constructible_v<
                         Ts,
