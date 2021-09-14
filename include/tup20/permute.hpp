@@ -103,7 +103,7 @@ struct std::tuple_size<tup20::storage_permuted_tuple<σ, Ts...>>
     : std::integral_constant<std::size_t, sizeof...(Ts)> {};
 template<std::size_t N, auto σ, class... Ts>
 struct std::tuple_element<N, tup20::storage_permuted_tuple<σ, Ts...>> {
-  using Type = decltype(tup20::get_n<N>(
+  using type = decltype(tup20::get_n<N>(
       std::declval<tup20::storage_permuted_tuple<σ, Ts...>>()));
 };
 

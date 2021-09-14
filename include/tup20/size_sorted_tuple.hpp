@@ -56,7 +56,7 @@ struct std::tuple_size<tup20::size_sorted_tuple<Ts...>>
 
 template<std::size_t N, class... Ts>
 struct std::tuple_element<N, tup20::size_sorted_tuple<Ts...>> {
-  using Type = decltype(tup20::get_n<N>(
+  using type = decltype(tup20::get_n<N>(
       std::declval<tup20::size_sorted_tuple<Ts...>>()));
 };
 
