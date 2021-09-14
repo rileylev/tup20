@@ -12,11 +12,15 @@ namespace tup20 {
 template<std::size_t N>
 using permutation = std::array<std::size_t, N>;
 
+template<std::convertible_to<std::size_t>... Args>
+constexpr auto make_permutation(Args... args)
+    TUP20_ARROW(permutation<sizeof...(Args)>{static_cast<std::size_t>(args)...})
+
 /**
  * Inverts a permutation
  */
 template<std::size_t N>
-constexpr permutation<N> invert(permutation<N> σ) noexcept {
+constexpr permutation<N> invert(permutation<N> const σ) noexcept {
   //  σ⁻¹σ   = id
   //  σ⁻¹σ i = i
   permutation<N> inv;
@@ -37,13 +41,13 @@ constexpr permutation<N> invert(permutation<N> σ) noexcept {
 template<auto σ, auto... Is>
 static constexpr auto
     unpermute_tuple_(auto const& tup, std::index_sequence<Is...>)
-        TUP20_ARROW(tuple{get_n<σ[Is]>(tup)...})
+        TUP20_ARROW(tuple{tup20::get_n<σ[Is]>(tup)...})
 template<auto σ>
 constexpr auto unpermute_tuple(auto const& tup)
     TUP20_ARROW(unpermute_tuple_<σ>(
         tup,
         std::make_index_sequence<
-            std::tuple_size_v<std::remove_reference_t<decltype(tup)>>>{}));
+            std::tuple_size_v<std::remove_cvref_t<decltype(tup)>>>{}));
 // alternate approach would be to permute the index sequence by σ before
 // passing it along
 template<auto σ>

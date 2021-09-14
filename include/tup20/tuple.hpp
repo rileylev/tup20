@@ -69,6 +69,7 @@ struct tuple_friends {
       get_n_<N>(TUP20_FWD(tup))
 #endif
   )
+
   template<class T>
   friend constexpr auto get(auto&& tup)
       TUP20_ARROW(get_t_<T>(TUP20_FWD(tup)))

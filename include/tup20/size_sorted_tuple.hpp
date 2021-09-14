@@ -21,7 +21,7 @@ static constexpr auto cmp_by(auto f, auto less = std::less<>{}) {
 }
 
 template<auto attribute, class less, class... Ts>
-inline constexpr auto attribute_sorting_permutation = [] {
+inline constexpr auto attribute_sorting_indices = [] {
   constexpr auto       N{sizeof...(Ts)};
   constexpr std::array attrs{attribute.template operator()<Ts>()...};
 
@@ -32,6 +32,10 @@ inline constexpr auto attribute_sorting_permutation = [] {
             cmp_by([=] TUP20_FN(attrs[_]), less {}));
   return indices;
 }();
+
+template<auto attribute, class less, class... Ts>
+inline constexpr auto attribute_sorting_permutation =
+    invert(attribute_sorting_indices<attribute, less, Ts...>);
 
 template<class... Ts>
 inline constexpr auto size_descending_permutation =
