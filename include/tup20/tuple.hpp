@@ -59,10 +59,10 @@ struct tuple_friends {
 #undef TUP20_DEFINE_GET_HELPERS
 
  public:
-#ifdef TUP20_USE_TYPE_PACK_ELEMENT
+#if TUP20_USE_TYPE_PACK_ELEMENT
 #  define TUP20_COMMA_NTH_TYPE(tup, N)                                    \
     , typename std::remove_cvref_t<decltype(tup)>::template nth_t<N>
-#elif
+#else
 #  define TUP20_COMMA_NTH_TYPE(tup, N)
 #endif
 
