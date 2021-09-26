@@ -1,2 +1,12 @@
 #+TITLE: Readme
-C++20 utilities for various kinds of tuples
+C++20 utilities for various kinds of tuples.
+* Why
+** Necessity:
+There's some features I wanted that the standard tuple doesn't implement, at least not portably. For example ~std::tuple<int,int>~ is not trivially copyable in libstdc++!
+
+I wanted to automate structure packing by sorting a tuple's types by size. Especially in templated/generic code, when you can't actually perform this optimization by hand.
+In this use-case, I want my tuple to be as ~std::trivially_.*_v~ as the equivalent handwritten struct would be, making the `std::tuple` (at least somewhat) suboptimal.
+
+Additionally, because the layout of ~std::tuple~ is completely implementation dependent, it's hard for my tuple sorting code to know how to actually order anything!
+** Simplicity:
+Prior to C++20, your regular `std::tuple` implementation took around 1,000 LOC or more, most of which is incidental complexity from having difficulty expressing key ideas in older C++ versions. But starting from scratch, a C++20 tuple implementation can be much closer to 200LOC.
