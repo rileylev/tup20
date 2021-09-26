@@ -48,7 +48,7 @@ AlwaysBreakTemplateDeclarations: true
 SpaceBeforeParens: Never
 
 
-StatementMacros: ['TUP20_ARROW']
+StatementMacros: ['TUP20_ARROW', 'TUP20_RET', 'TUP20_NOEX']
 
 PenaltyExcessCharacter: 30
 PenaltyReturnTypeOnItsOwnLine: 3

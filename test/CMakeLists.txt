@@ -3,7 +3,7 @@
 #
 # This file does not assume any kind of package manager.
 # It assumes dependencies will be found by find_package.
-project(size_sorted_tuple_test)
+project(tup20_test)
 
 include(early_hook.cmake)
 
@@ -14,7 +14,7 @@ set(CMAKE_BUILD_TYPE Debug)
 
 target_link_libraries(tester
   PRIVATE
-  size_sorted_tuple::size_sorted_tuple
+  tup20::tup20
   Catch2::Catch2)
 
 include(CTest)

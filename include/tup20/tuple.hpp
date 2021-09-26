@@ -59,16 +59,16 @@ struct tuple_friends {
 #undef TUP20_DEFINE_GET_HELPERS
 
  public:
-  template<auto N>
-  friend constexpr auto get(auto&& tup) TUP20_ARROW(
-#if TUP20_USE_TYPE_PACK_ELEMENT
-      get_n_<N,
-             typename std::remove_cvref_t<decltype(tup)>::template nth_t<N>>(
-          TUP20_FWD(tup))
-#else
-      get_n_<N>(TUP20_FWD(tup))
+#ifdef TUP20_USE_TYPE_PACK_ELEMENT
+#  define TUP20_COMMA_NTH_TYPE(tup, N)                                    \
+    , typename std::remove_cvref_t<decltype(tup)>::template nth_t<N>
+#elif
+#  define TUP20_COMMA_NTH_TYPE(tup, N)
 #endif
-  )
+
+  template<auto N>
+  friend constexpr auto get(auto&& tup)
+      TUP20_ARROW(get_n_<N TUP20_COMMA_NTH_TYPE(tup, N)>(TUP20_FWD(tup)))
 
   template<class T>
   friend constexpr auto get(auto&& tup)
@@ -157,9 +157,9 @@ requires(same_tuple_size<sizeof...(Is), X, Y>) //
             decltype(get_n<Is>(x) <=> get_n<Is>(y))...> {
   using Ord = decltype(x <=> y);
   Ord ord   = Ord::equivalent;
-  static_cast<void>(((ord = (get_n<Is>(x) <=> get_n<Is>(y)),
-                      std::is_eq(ord)) // while (std::is_eq(ord))
-                     and ...));
+  (void)((ord = (get_n<Is>(x) <=> get_n<Is>(y)),
+          std::is_eq(ord)) // while (std::is_eq(ord))
+         and ...);
   return ord;
 }
 } // namespace impl

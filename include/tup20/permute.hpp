@@ -14,7 +14,8 @@ using permutation = std::array<std::size_t, N>;
 
 template<std::convertible_to<std::size_t>... Args>
 constexpr auto make_permutation(Args... args)
-    TUP20_ARROW(permutation<sizeof...(Args)>{static_cast<std::size_t>(args)...})
+    TUP20_ARROW(permutation<sizeof...(Args)>{
+        static_cast<std::size_t>(args)...})
 
 /**
  * Inverts a permutation
@@ -63,16 +64,15 @@ struct permuted_tuple_frieds {
   /* x[i]=σx[σi]; external[i]=underlying_[σi] */
   template<auto n>
   friend constexpr auto get(auto&& tup)
-      TUP20_ARROW(get_n<std::remove_cvref_t<decltype(tup)>::σ[n]> TUP20_FWD(
-          tup.underlying_))
+      TUP20_ARROW(get_n<std::remove_cvref_t<decltype(tup)>::σ[n]>(
+          TUP20_FWD(tup.underlying_)))
 
   template<class T>
   friend constexpr auto get(auto&& tup)
-      TUP20_ARROW(get_t<T>(tup.underlying_))
+      TUP20_ARROW(get_t<T>(TUP20_FWD(tup.underlying_)))
 };
 } // namespace impl
 
-#if true
 // present an interface as if storage hasn't been permuted
 // x= eXternal
 // σ x = internal (underlying)
@@ -98,8 +98,6 @@ class storage_permuted_tuple : impl::permuted_tuple_frieds {
           noexcept(storage_permuted_tuple{tuple{TUP20_FWD(args)...}}))
       : storage_permuted_tuple{tuple{TUP20_FWD(args)...}} {}
 };
-#endif
-
 } // namespace tup20
 
 template<auto σ, class... Ts>
