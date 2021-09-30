@@ -146,24 +146,22 @@ struct tuple_friends {
       TUP20_ARROW(tuple_friends::get<N>(TUP20_FWD(tup)))
 };
 
-template<class... Ts>
-struct nth_t_mixin {
-
+template<class Self, auto N, class... Ts>
+using nth_t_impl =
 #if TUP20_USE_TYPE_PACK_ELEMENT
-  template<auto N>
-  using nth_t = __type_pack_element<N, Ts...>;
+   __type_pack_element<N, Ts...>;
 #else
-  template<auto N>
-  using nth_t = decltype(get_n<N>(std::declval<tuple_impl>()));
+   decltype(get_n<N>(std::declval<Self>()));
 #endif
-};
 
 template<class seq, class... Ts>
 struct tuple_impl;
 template<auto... Is, class... Ts>
 struct tuple_impl<std::index_sequence<Is...>, Ts...>
-    : tuple_friends, nth_t_mixin<Ts...>, box<Is, Ts>... {
+    : tuple_friends, box<Is, Ts>... {
   static constexpr auto size = sizeof...(Ts);
+  template<auto N>
+  using nth_t = nth_t_impl<tuple_impl,N, Ts...>;
   tuple_impl()               = default;
 
   template<class... Args>

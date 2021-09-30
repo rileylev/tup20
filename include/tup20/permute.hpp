@@ -81,10 +81,11 @@ struct permuted_tuple_frieds {
 // x[i] = σx[σi]
 template<auto σ_, class... Ts>
 class storage_permuted_tuple
-    : impl::permuted_tuple_frieds,
-      impl::nth_t_mixin<Ts...> {
+    : impl::permuted_tuple_frieds {
  public:
   static constexpr auto size = sizeof...(Ts);
+    template<auto N>
+    using nth_t = impl::nth_t_impl<storage_permuted_tuple, N, Ts...>;
 
  private:
   static constexpr auto σ = σ_;
