@@ -45,9 +45,8 @@ concept has_nth_t = requires {
 } // namespace impl
 template<class Tup>
 constexpr auto size = [] {
-  using  Tup_ = std::remove_cvref_t<Tup>;
-  if constexpr(impl::has_size<Tup_>)
-    return Tup_::size;
+  using Tup_ = std::remove_cvref_t<Tup>;
+  if constexpr(impl::has_size<Tup_>) return Tup_::size;
   else return std::tuple_size<Tup_>::value;
 }();
 
@@ -79,7 +78,6 @@ template<class T>
 inline constexpr niebloid_impl::get_t<T> get_t{};
 template<auto N>
 inline constexpr niebloid_impl::get_n<N> get_n{};
-
 
 namespace impl {
 template<class>
@@ -117,10 +115,11 @@ struct tuple_friends {
 
   template<auto N, class Tup>
   requires(N >= 0 and N < tup20::size<Tup>) //
-      friend constexpr auto get(Tup&& tup) TUP20_ARROW(
-          get_n_<N TUP20_COMMA_NTH_TYPE(tup, N)>(TUP20_FWD(tup)));
+      static constexpr auto get(Tup&& tup)
+          TUP20_ARROW(tuple_friends::get_n_<N TUP20_COMMA_NTH_TYPE(tup, N)>(
+              TUP20_FWD(tup)));
   template<auto N, class Tup>
-  friend constexpr auto get(Tup&&) {
+  static constexpr auto get(Tup&&) {
     static_assert(
         N >= 0 and N < tup20::size<Tup>,
         "Bad index for get<N>(tuple)"
@@ -129,14 +128,22 @@ struct tuple_friends {
 
   template<class T, class Tup>
   requires(true) // prioritize
-      friend constexpr auto get(Tup&& tup)
-          TUP20_ARROW(get_t_<T>(TUP20_FWD(tup)))
+      static constexpr auto get(Tup&& tup)
+          TUP20_ARROW(tuple_friends::get_t_<T>(TUP20_FWD(tup)))
   template<class T, class Tup>
-  friend constexpr auto get(Tup&&) {
+  static constexpr auto get(Tup&&) {
     static_assert(
         delay<T>(false),
         "get<type>(tuple) only works if type is in tuple exactly once");
   }
+
+  template<class T>
+  friend constexpr auto get(auto&& tup)
+      TUP20_ARROW(tuple_friends::get<T>(TUP20_FWD(tup)))
+
+  template<auto N>
+  friend constexpr auto get(auto&& tup)
+      TUP20_ARROW(tuple_friends::get<N>(TUP20_FWD(tup)))
 };
 
 template<class... Ts>

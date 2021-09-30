@@ -8,7 +8,7 @@
 // This is to test we get helpful compile errors. I will automate these eventually
 // int bad_get(){
 //   tup20::tuple<int,int> x;
-//   return get<float>(x);
+//   return tup20::get_t<int>(x);
 // }
 
 TEST_CASE("tup20::tuple is trivially copyable if its components are") {
