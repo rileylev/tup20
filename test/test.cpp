@@ -5,6 +5,12 @@
 
 #include <array>
 
+// This is to test we get helpful compile errors. I will automate these eventually
+// int bad_get(){
+//   tup20::tuple<int,int> x;
+//   return get<float>(x);
+// }
+
 TEST_CASE("tup20::tuple is trivially copyable if its components are") {
   STATIC_REQUIRE(
       std::is_trivially_copyable_v<tup20::tuple<int, int, float>>);

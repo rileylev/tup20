@@ -123,6 +123,7 @@ struct fake {
 
 #define TUP20_FN(...) TUP20_FN_(TUP20_GENSYM(fn_type), __VA_ARGS__)
 
+#define TUP20_IMPLICIT(...) explicit(!(__VA_ARGS__))
 // []TUP20_FN(_3)(0) ==> compile error!!
 
 #endif // MACROS_HPP_INCLUDE_GUARD

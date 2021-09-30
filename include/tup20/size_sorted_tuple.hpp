@@ -53,15 +53,4 @@ struct size_sorted_tuple
 template<class... Ts>
 size_sorted_tuple(Ts...) -> size_sorted_tuple<Ts...>;
 } // namespace tup20
-
-template<class... Ts>
-struct std::tuple_size<tup20::size_sorted_tuple<Ts...>>
-    : std::integral_constant<std::size_t, sizeof...(Ts)> {};
-
-template<std::size_t N, class... Ts>
-struct std::tuple_element<N, tup20::size_sorted_tuple<Ts...>> {
-  using type = decltype(tup20::get_n<N>(
-      std::declval<tup20::size_sorted_tuple<Ts...>>()));
-};
-
 #endif // TUP20_SIZE_SORTED_TUPLE_HPP_INCLUDE_GUARD

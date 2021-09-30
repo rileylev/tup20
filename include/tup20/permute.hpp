@@ -4,6 +4,8 @@
 #include "impl/macros.hpp"
 #include "tuple.hpp"
 
+#include <array>
+
 namespace tup20 {
 /**
  * A dense representation of Sn (permutation group of {0,1,... n-1})
@@ -48,7 +50,7 @@ constexpr auto unpermute_tuple(auto const& tup)
     TUP20_ARROW(unpermute_tuple_<σ>(
         tup,
         std::make_index_sequence<
-            std::tuple_size_v<std::remove_cvref_t<decltype(tup)>>>{}));
+            tup20::size<std::remove_cvref_t<decltype(tup)>>>{}));
 // alternate approach would be to permute the index sequence by σ before
 // passing it along
 template<auto σ>
@@ -78,7 +80,12 @@ struct permuted_tuple_frieds {
 // σ x = internal (underlying)
 // x[i] = σx[σi]
 template<auto σ_, class... Ts>
-class storage_permuted_tuple : impl::permuted_tuple_frieds {
+class storage_permuted_tuple
+    : impl::permuted_tuple_frieds,
+      impl::nth_t_mixin<Ts...> {
+ public:
+  static constexpr auto size = sizeof...(Ts);
+
  private:
   static constexpr auto σ = σ_;
   using underlying_t      = impl::permute_tuple_t<σ, Ts...>;
@@ -99,14 +106,4 @@ class storage_permuted_tuple : impl::permuted_tuple_frieds {
       : storage_permuted_tuple{tuple{TUP20_FWD(args)...}} {}
 };
 } // namespace tup20
-
-template<auto σ, class... Ts>
-struct std::tuple_size<tup20::storage_permuted_tuple<σ, Ts...>>
-    : std::integral_constant<std::size_t, sizeof...(Ts)> {};
-template<std::size_t N, auto σ, class... Ts>
-struct std::tuple_element<N, tup20::storage_permuted_tuple<σ, Ts...>> {
-  using type = decltype(tup20::get_n<N>(
-      std::declval<tup20::storage_permuted_tuple<σ, Ts...>>()));
-};
-
 #endif // TUP20_PERMUTE_HPP_INCLUDE_GUARD
