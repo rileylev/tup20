@@ -13,6 +13,8 @@
 #define TUP20_FWD(...) (static_cast<decltype(__VA_ARGS__)&&>(__VA_ARGS__))
 // equivalent to std::forward<decltype(__VA_ARGS__)>(__VA_ARGS__)
 
+#define TUP20_IMPLICIT(...) explicit(!(__VA_ARGS__))
+
 /*************************
  * Arrow function macros *
  *************************/
@@ -40,12 +42,22 @@
 // Because value wrappers have little of their own behavior, their
 // functions' bodies often are a single expression. Furthermore,
 // value wrappers should propagate noexcept-ness.
+/**
+ * Generate a function body that returns its argument
+ */
 #define TUP20_RET(...)                                                    \
   { return __VA_ARGS__; }
 
+/**
+ * Generate a function body that returns its argument and deduces noexceptness
+ */
 #define TUP20_NOEX(...)                                                   \
   noexcept(noexcept(__VA_ARGS__)) TUP20_RET(__VA_ARGS__)
 
+/**
+ * Generate a function body that returns its argument, deduces noexceptness,
+ * and generate a trailing return type (deducing this via decltype(body))
+ */
 #define TUP20_ARROW(...)                                                  \
   noexcept(noexcept(__VA_ARGS__))->decltype(__VA_ARGS__) TUP20_RET(__VA_ARGS__)
 
@@ -79,7 +91,7 @@ template<class T>
  * This prevents the compiler from eagerly evaluating a
  * static_assert(false, ...) in template code.
  */
-auto depend_id(auto x) TUP20_RET(x)
+constexpr auto depend_id(auto x) TUP20_RET(x)
 
 /**
  * A dummy type that cannot be used.
@@ -122,8 +134,9 @@ struct fake {
 // TODO: should we take arguments by ref? constref?
 
 #define TUP20_FN(...) TUP20_FN_(TUP20_GENSYM(fn_type), __VA_ARGS__)
-
-#define TUP20_IMPLICIT(...) explicit(!(__VA_ARGS__))
 // []TUP20_FN(_3)(0) ==> compile error!!
 
+#define TUP20_LIFT_(args, ...)                                            \
+  [](auto&&... args) { return __VA_ARGS__(TUP20_FWD(args)...); }
+#define TUP20_LIFT(...) TUP20_LIFT_(TUP20_GENSYM(args), __VA_ARGS__)
 #endif // MACROS_HPP_INCLUDE_GUARD

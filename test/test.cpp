@@ -4,6 +4,7 @@
 #include <catch2/catch.hpp>
 
 #include <array>
+#include <cassert>
 
 // This is to test we get helpful compile errors. I will automate these eventually
 // int bad_get(){
@@ -46,20 +47,30 @@ TEST_CASE("std::tuple_size_v can get the size of a tup20::tuple") {
 }
 
 #include <tup20/permute.hpp>
+template<class To, class From>
+constexpr To narrow(From from) {
+  To to = static_cast<To>(from);
+  assert(std::cmp_equal(to, from));
+  return to;
+}
+
+template<std::convertible_to<std::size_t>... Args>
+constexpr auto make_permutation(Args... args)
+    TUP20_ARROW(tup20::permutation<sizeof...(Args)>{narrow<std::size_t>(args)...})
 
 TEST_CASE("invert calculates the inverse of a permutation") {
-  constexpr auto circ_right = tup20::make_permutation(1, 2, 3, 0);
-  constexpr auto circ_left  = tup20::make_permutation(3, 0, 1, 2);
+  constexpr auto circ_right = make_permutation(1, 2, 3, 0);
+  constexpr auto circ_left  = make_permutation(3, 0, 1, 2);
   // identity
-  STATIC_REQUIRE(tup20::invert(tup20::make_permutation(0, 1, 2))
-                 == tup20::make_permutation(0, 1, 2));
+  STATIC_REQUIRE(tup20::invert(make_permutation(0, 1, 2))
+                 == make_permutation(0, 1, 2));
   // circle right -> circle left
   STATIC_REQUIRE(tup20::invert(circ_right) == circ_left);
 }
 
 TEST_CASE("permute_tuple calculates what you get from permuting a tuple's "
           "elements") {
-  constexpr auto circ_right = tup20::make_permutation(1, 2, 3, 0);
+  constexpr auto circ_right = make_permutation(1, 2, 3, 0);
   STATIC_REQUIRE(tup20::permute_tuple<circ_right>(tup20::tuple{0, 1, 2, 3})
                  == tup20::tuple{3, 0, 1, 2});
 }
@@ -71,5 +82,5 @@ TEST_CASE("size_descending_permutation calculates the permutation "
       tup20::size_descending_permutation<
           int,
           char,
-          void*> == tup20::make_permutation(1, 2, 0));
+          void*> == make_permutation(1, 2, 0));
 }

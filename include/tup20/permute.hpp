@@ -14,11 +14,6 @@ namespace tup20 {
 template<std::size_t N>
 using permutation = std::array<std::size_t, N>;
 
-template<std::convertible_to<std::size_t>... Args>
-constexpr auto make_permutation(Args... args)
-    TUP20_ARROW(permutation<sizeof...(Args)>{
-        static_cast<std::size_t>(args)...})
-
 /**
  * Inverts a permutation
  */
@@ -46,6 +41,9 @@ static constexpr auto
     unpermute_tuple_(auto const& tup, std::index_sequence<Is...>)
         TUP20_ARROW(tuple{tup20::get_n<σ[Is]>(tup)...})
 template<auto σ>
+/**
+ * Unpermutes tup by σ, that is, permutes the elements of tup by σ⁻¹.
+ */
 constexpr auto unpermute_tuple(auto const& tup)
     TUP20_ARROW(unpermute_tuple_<σ>(
         tup,
@@ -53,6 +51,9 @@ constexpr auto unpermute_tuple(auto const& tup)
             tup20::size<std::remove_cvref_t<decltype(tup)>>>{}));
 // alternate approach would be to permute the index sequence by σ before
 // passing it along
+/**
+ * Permute the elements of tup by σ
+ */
 template<auto σ>
 constexpr auto permute_tuple(auto const& tup)
     TUP20_ARROW(unpermute_tuple<invert(σ)>(tup))
@@ -79,13 +80,23 @@ struct permuted_tuple_frieds {
 // x= eXternal
 // σ x = internal (underlying)
 // x[i] = σx[σi]
+/**
+ * A tuple containing elements Ts... where the storage is *transparently
+ * permuted* by σ: elements are stored in permuted order (by σ) but are
+ * accessed in declaration order (the order they show up in Ts...)
+ *
+ * This is for storage optimization. For example, structure packing by
+ * sorting members by descending size.
+ */
 template<auto σ_, class... Ts>
-class storage_permuted_tuple
-    : impl::permuted_tuple_frieds {
+class storage_permuted_tuple : impl::permuted_tuple_frieds {
+  using typelist = tuple<Ts...>;
+
  public:
   static constexpr auto size = sizeof...(Ts);
-    template<auto N>
-    using nth_t = impl::nth_t_impl<storage_permuted_tuple, N, Ts...>;
+
+  template<auto N>
+  using nth_t = typename typelist::template nth_t<N>;
 
  private:
   static constexpr auto σ = σ_;
@@ -101,7 +112,7 @@ class storage_permuted_tuple
       : underlying_{permute_tuple<σ>(std::move(args))} {}
 
   template<class... Args>
-  constexpr explicit(!(std::is_convertible_v<Args&&, Ts> and ...))
+  constexpr TUP20_IMPLICIT((std::is_convertible_v<Args&&, Ts> and ...))
       storage_permuted_tuple(Args&&... args) noexcept(
           noexcept(storage_permuted_tuple{tuple{TUP20_FWD(args)...}}))
       : storage_permuted_tuple{tuple{TUP20_FWD(args)...}} {}
