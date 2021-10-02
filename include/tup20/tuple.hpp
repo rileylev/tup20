@@ -78,7 +78,6 @@ using copy_cv = copy_volatile<From, copy_const<From, To>>;
  * We prefer the member type alias because it is easier to call
  * __type_pack_element from inside the class.
  */
-// TODO: fix value category+qualifiers
 template<auto N, class Tup>
 using nth_t = decltype([] {
   using Tup_ = std::remove_reference_t<Tup>;
