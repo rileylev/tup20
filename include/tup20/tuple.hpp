@@ -83,7 +83,7 @@ using nth_t = decltype([] {
   using Tup_ = std::remove_reference_t<Tup>;
   if constexpr(has_nth_t_member<N, Tup_>)
     return std::declval<copy_cv<Tup_, typename Tup_::template nth_t<N>>>();
-  else return std::tuple_element<N, Tup_>::type;
+  else return std::declval<std::tuple_element<N, Tup_>::type>();
   // going by get has the wrong value categories
   // maybe they can be deduced by reference collapsing but that seems like a mess
 }());
@@ -119,7 +119,7 @@ template<class>
 constexpr auto delay(auto x) TUP20_RET(x);
 
 /**
- * The nth wrapper of type Type for implementing the inheritence trick.
+ * The nth wrapper of type Type for the inheritence trick.
  *
  * tup20::tuple is implemented with the inheritence trick.
  * tup20::tuple<T0,T1,...Tn> is implemented by inheriting from
@@ -200,9 +200,8 @@ struct tuple_friends {
     constexpr auto T_in_Tup = []<auto... I>(std::index_sequence<I...>) {
       // return (std::is_same_v<tup20::nth_t<I,Tup>, T>or ...);
       // ^^^^ this line is tripping up GCC for some reason?
-      constexpr auto is_nth = []<auto N>() {
-        return std::is_same_v<nth_t<N, Tup>, T>;
-      };
+      constexpr auto is_nth =
+          []<auto N>() TUP20_RET(std::is_same_v<nth_t<N, Tup>, T>)
       return (is_nth.template operator()<I>() or ...);
     }
     (std::make_index_sequence<size<Tup>>{});
@@ -317,10 +316,12 @@ requires(size<X> == size<Y>) constexpr auto
     operator<=>(X const& x, Y const& y) TUP20_ARROW(
         spaceship_(x, y, std::make_index_sequence<tup20::size<X>>{}))
 
-constexpr auto make_tuple = [](auto... x) TUP20_ARROW(tup20::tuple{x...});
+inline constexpr auto make_tuple =
+    [](auto... x) TUP20_ARROW(tup20::tuple{x...});
 
+namespace {
 template<auto... I, auto... J>
-static constexpr auto
+constexpr auto
     cat2_(std::index_sequence<I...>,
           std::index_sequence<J...>,
           auto const& x,
@@ -329,14 +330,13 @@ static constexpr auto
         TUP20_ARROW(make_tup(get_n<I>(x)..., get_n<J>(y)...))
 
 template<class X, class Y, class MakeTup = decltype(make_tuple)>
-static constexpr auto cat2(X const& x, Y const& y, MakeTup make_tup = {})
+constexpr auto cat2(X const& x, Y const& y, MakeTup make_tup = {})
     TUP20_ARROW(cat2_(std::make_index_sequence<size<X>>{},
                       std::make_index_sequence<size<Y>>{},
                       x,
                       y,
                       make_tup))
 
-namespace {
 /**
  * for folding over cat2
  */
