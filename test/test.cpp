@@ -6,8 +6,8 @@
 #include <array>
 #include <cassert>
 
-// This is to test we get helpful compile errors. I will automate these eventually
-// int bad_get(){
+// This is to test we get helpful compile errors. I will automate these
+// eventually int bad_get(){
 //   tup20::tuple<int,int> x;
 //   return tup20::get_t<int>(x);
 // }
@@ -56,16 +56,17 @@ constexpr To narrow(From from) {
 
 template<std::convertible_to<std::size_t>... Args>
 constexpr auto make_permutation(Args... args)
-    TUP20_ARROW(tup20::permutation<sizeof...(Args)>{narrow<std::size_t>(args)...})
+    TUP20_ARROW(tup20::permutation<sizeof...(Args)>{
+        narrow<std::size_t>(args)...})
 
 TEST_CASE("invert calculates the inverse of a permutation") {
   constexpr auto circ_right = make_permutation(1, 2, 3, 0);
   constexpr auto circ_left  = make_permutation(3, 0, 1, 2);
   // identity
-  STATIC_REQUIRE(tup20::invert(make_permutation(0, 1, 2))
+  STATIC_REQUIRE(tup20::inverse(make_permutation(0, 1, 2))
                  == make_permutation(0, 1, 2));
   // circle right -> circle left
-  STATIC_REQUIRE(tup20::invert(circ_right) == circ_left);
+  STATIC_REQUIRE(tup20::inverse(circ_right) == circ_left);
 }
 
 TEST_CASE("permute_tuple calculates what you get from permuting a tuple's "
@@ -75,12 +76,16 @@ TEST_CASE("permute_tuple calculates what you get from permuting a tuple's "
                  == tup20::tuple{3, 0, 1, 2});
 }
 
+TEST_CASE("will tuple_cat crash clang?") {
+  STATIC_REQUIRE(tup20::cat(tup20::tuple{'a', 'b'}, tup20::tuple{'c', 'd'})
+                 == tup20::tuple{'a', 'b', 'c', 'd'});
+}
+
 #include <tup20/size_sorted_tuple.hpp>
 TEST_CASE("size_descending_permutation calculates the permutation "
           "that will sort the types in order of descending sizes") {
   STATIC_REQUIRE(
-      tup20::size_descending_permutation<
-          int,
-          char,
-          void*> == make_permutation(1, 2, 0));
+      tup20::size_descending_permutation<int,
+                                         char,
+                                         void*> == make_permutation(1, 2, 0));
 }

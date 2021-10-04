@@ -90,7 +90,7 @@ inline constexpr auto attribute_sorting_indices = [] {
  */
 template<auto attribute, class less, class... Ts>
 inline constexpr auto attribute_sorting_permutation =
-    invert(attribute_sorting_indices<attribute, less, Ts...>);
+    inverse(attribute_sorting_indices<attribute, less, Ts...>);
 
 template<class... Ts>
 inline constexpr auto size_descending_permutation =

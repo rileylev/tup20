@@ -31,6 +31,9 @@ BreakStringLiterals: true
 ColumnLimit: 75
 CommentPragmas: "-\\*-.*-\\*-"
 CompactNamespaces: true
+
+NamespaceIndentation: Inner
+
 ConstructorInitializerAllOnOneLineOrOnePerLine: true
 Cpp11BracedListStyle: true
 FixNamespaceComments: true
