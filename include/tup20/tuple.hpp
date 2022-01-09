@@ -23,16 +23,20 @@
 #endif
 #if TUP20_FWD_DECLARE_STD_TUPLE_UTILITIES
 // risky to forward declare these? but it seems like the closest way to say
-// "do this if we #include <tuple> later"
+// "do this if we #include <tuple>
+namespace std {
 template<class T>
-struct std::tuple_size {};
+struct tuple_size;
 template<std::size_t N, class T>
-struct std::tuple_element {};
+struct tuple_element;
+} // namespace std
 #else
 #  include <tuple>
 #endif
 
 namespace tup20 {
+
+struct bad_overload {};
 
 namespace impl {
   template<class Tup>
@@ -73,7 +77,7 @@ namespace impl {
 
 /**
  * Get the type of the Nth element of Tup. This prefers a member type alias
- * called nth_t, but falls back to get<N>.
+ * called nth_t, but falls back to std::tuple_element.
  *
  * We prefer the member type alias because it is easier to call
  * __type_pack_element from inside the class.
@@ -167,8 +171,8 @@ namespace impl {
 #undef TUP20_DEFINE_GET_HELPERS
 
 #if TUP20_USE_TYPE_PACK_ELEMENT
-    // if we have __type_pack_element, we can grab the type before calling
-    // get. So we can pass it to get (less searching in overload resolution?)
+    // if we have __type_pack_element, we can grab the type beforehand and
+    // pass it to get. This means less searching through overload resolution.
 #  define TUP20_COMMA_NTH_TYPE(tup, N)                                    \
     , typename std::remove_reference_t<decltype(tup)>::template nth_t<N>
 #else
@@ -185,20 +189,25 @@ namespace impl {
         static constexpr auto get(Tup&& tup) TUP20_ARROW(
             tuple_friends::get_n_<N TUP20_COMMA_NTH_TYPE(tup, N)>(
                 TUP20_FWD(tup)));
+
     template<auto N, class Tup>
-    static constexpr auto get(Tup&&) {
+    static constexpr bad_overload get(Tup&&) {
       static_assert(0 <= N, "Bad get<N>(tuple) index! N can't be negative");
       static_assert(N < tup20::size<Tup>,
                     "Bad get<N>(tuple) index!"
                     "N must be smaller than the tuple's size.");
+      return {};
     }
 
     template<class T, class Tup>
     requires(true) // prioritize
         static constexpr auto get(Tup&& tup)
             TUP20_ARROW(tuple_friends::get_t_<T>(TUP20_FWD(tup)))
+
+    // fallback case: get<T> only works if T occurs uniquely. Here it
+    // either isn't there or isn't unique. Error accordingly.
     template<class T, class Tup>
-    static constexpr auto get(Tup&&) {
+    static constexpr bad_overload get(Tup&&) {
       constexpr auto T_in_Tup = []<auto... I>(std::index_sequence<I...>) {
         // return (std::is_same_v<tup20::nth_t<I,Tup>, T>or ...);
         // ^^^^ this line is tripping up GCC for some reason?
@@ -207,6 +216,7 @@ namespace impl {
         return (is_nth.template operator()<I>() or ...);
       }
       (std::make_index_sequence<size<Tup>>{});
+
       if constexpr(T_in_Tup)
         static_assert(delay<T>(false),
                       "Bad type for get<type>(tuple)! The call is "
@@ -215,6 +225,7 @@ namespace impl {
         static_assert(delay<T>(false),
                       "Bad type for get<type>(tuple)! There is no element "
                       "in tuple with that type.");
+      return {};
     }
 
    public:

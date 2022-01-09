@@ -89,3 +89,11 @@ TEST_CASE("size_descending_permutation calculates the permutation "
                                          char,
                                          void*> == make_permutation(1, 2, 0));
 }
+
+TEST_CASE("We can check for a bad_overload using decltype without "
+          "triggering the static_assert.") {
+  STATIC_REQUIRE(
+      std::is_same_v<decltype(get<3>(tup20::tuple{})), tup20::bad_overload>);
+  // but touching it breaks
+  // constexpr auto x = get<3>(tup20::tuple{}); // -> static_assert fires
+}

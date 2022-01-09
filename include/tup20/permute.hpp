@@ -131,8 +131,8 @@ class storage_permuted_tuple : impl::permuted_tuple_frieds {
   // convert seems more likely to be what a user meant
   // TODO: explicit?
   constexpr storage_permuted_tuple(tuple<Ts...> const& args) noexcept(
-      noexcept(underlying_t{permute_tuple<σ>(std::move(args))}))
-      : underlying_{permute_tuple<σ>(std::move(args))} {}
+      noexcept(underlying_t{permute_tuple<σ>(args)}))
+      : underlying_{permute_tuple<σ>(args)} {}
 
   template<class... Args>
   constexpr TUP20_IMPLICIT((std::is_convertible_v<Args&&, Ts> and ...))
